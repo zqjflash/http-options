@@ -55,6 +55,10 @@ Content-Type:text/html; charset=utf-8
   ![Alt text](https://raw.githubusercontent.com/zqjflash/http-options/master/http-options.png)
 
   - HEAD：类似于GET，但只返回头部（比如，判断其类型）
+  ![Alt text](https://raw.githubusercontent.com/zqjflash/http-options/master/http-HEAD.png)
+
+  - POST：向服务器输入数据，通常用HTML表单
+  ![Alt text](https://raw.githubusercontent.com/zqjflash/http-options/master/http-POST.png)
 
 - 不会使用自定义请求头（类似于X-Modified这种）
 
