@@ -62,42 +62,138 @@ Content-Type:text/html; charset=utf-8
 
 - 不会使用自定义请求头（类似于X-Modified这种）
 
+- 示例分析
 
-### 预请求
+  - topics.html5.qq.com的网页想要访问sc.qq.com资源
+
+  ```js
+  Zepto.ajax({
+    url: "http://sc.qq.com/fx",
+    data: { ... },
+    success: function(data) {}
+  });
+  ```
+
+  - 请求头
+
+  ```html
+  Accept:*/*
+  Accept-Encoding:gzip, deflate, sdch
+  Accept-Language:zh-CN,zh;q=0.8
+  Connection:keep-alive
+  Host:sc.qq.com
+  Origin:http://topcis.html5.qq.com
+  Referer:http://topcis.html5.qq.com/topics?action=getHtml&topId=833&from=singlemessage&isappinstalled=0
+  User-Agent:Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 4 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19
+  ```
+
+  - 响应头
+
+  ```html
+  `Access-Control-Allow-Origin:*`
+  Cache-Control:no-cache
+  Content-Encoding:gzip
+  Content-Length:568
+  Content-Type:text/html;charset=utf-8
+  Pragma:no-cache
+  Set-Cookie:sc_id=6193889328175799217; domain=sc.qq.com; path=/; expires=Tue, 10 Jul 2508 06:53:59 GMT
+  ```
+
+### 预请求OPTIONS
+  OPTIONS方法请求Web服务器告知其支持的各种功能。不用实际访问那些资源就能判定访问各种资源的最优方式。
+  - OPTIONS示例
+  ![Alt text](https://raw.githubusercontent.com/zqjflash/http-options/master/http-options-new1.png)
+
+  - 请求产生的条件
+    - 请求方式非GET、HEAD、POST方法
+    - POST方法请求头，数据类型非application/x-www-form-urlencoded，multipart/form-data，text/plain以外的数据类型
+    - 使用自定义请求头，比如X-PINGOTHER
+
+  - 示例代码：
+  ```js
+  var body = '{C}{C}Arun';
+  var invocation = new XMLHttpRequest();
+  invocation.open('POST', 'http://sc.qq.com/fx/share2nd', true);
+  invocation.setRequestHeader('X-PINGOTHER', 'pingpong');
+  invocation.setRequestHeader('Content-Type', 'application/xml');
+  invocation.send(body);
+  ```
+  - General
+  ```js
+  Remote Address:14.17.18.180:80
+  Request URL:http://sc.qq.com/fx/share2nd?%22{name:\%22aprilxue\%22,%20count:%203}%22
+  Request Method:OPTIONS
+  Status Code:200 OK
+  ```
+
+  - Request Headers
+  ```js
+  Accept:*/*
+  Accept-Encoding:gzip, deflate, sdch
+  Accept-Language:zh-CN,zh;q=0.8
+  `Access-Control-Request-Headers:X-PINGOTHER`
+  `Access-Control-Request-Method:POST`
+  Cache-Control:max-age=0
+  Connection:keep-alive
+  Host:sc.qq.com
+  Origin:http://127.0.0.1:8081
+  Referer:http://127.0.0.1:8081/
+  User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36
+  ```
+  > Access-Control-Request-Method: POST 提醒服务器跨站请求将使用POST
+  > Access-Control-Request-Headers: X-PINGOTHER 自定义请求头
 
 
+  - Response Headers
+  ```js
+  Access-Control-Allow-Origin:*
+  Access-Control-Allow-Methods: POST, GET, OPTIONS
+  Access-Control-Allow-Headers: X-PINGOTHER
+  Access-Control-Max-Age: 1728000
+  Cache-Control:no-cache
+  Content-Length:29
+  Content-Type:text/vnd.wap.wml; charset=utf-8
+  Pragma:no-cache
+  ```
+  > Access-Control-Allow-Methods: POST, GET, OPTIONS 服务器可以接受这三种方法
+  > Access-Control-Allow-Headers: X-PINGOTHER 服务器接受自定义请求头
+  > Access-Control-Max-Age: 1728000 表示浏览器在20天内针对跨域请求，无需再发送"预请求"
 
+### 附带凭证信息的请求
 
+  - 发送凭证请求（HTTP Cookies和验证信息）的功能。
+    - withCredentials: true，使得Cookies可以随请求发送。
 
+  - 请求头
+    ```js
+    Accept:*/*
+    Accept-Encoding:gzip, deflate, sdch
+    Accept-Language:zh-CN,zh;q=0.8
+    `Access-Control-Request-Headers:X-PINGOTHER`
+    `Access-Control-Request-Method:POST`
+    Cache-Control:max-age=0
+    Connection:keep-alive
+    Host:sc.qq.com
+    Origin:http://127.0.0.1:8081
+    Referer:http://127.0.0.1:8081/
+    User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.132 Safari/537.36
+    Cookie: pageAccess=2
+    ```
 
+  - 响应头
+    ```js
+    Access-Control-Allow-Origin:http://127.0.0.1:8081
+    `Access-Control-Allow-Credentials: true`
+    Access-Control-Allow-Methods: POST, GET, OPTIONS
+    Access-Control-Allow-Headers: X-PINGOTHER
+    Access-Control-Max-Age: 1728000
+    Cache-Control:no-cache
+    Content-Length:29
+    Content-Type:text/vnd.wap.wml; charset=utf-8
+    Pragma:no-cache
+    ```
+    > 带有withCredentials请求发送响应，服务器必须指定允许请求的域名，否则响应会失败
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### 附注：
+  > Access-Control-Expose-Headers: X-My-Custom-Header, X-Another-Custom-Header
+  - 这样, X-My-Custom-Header 和 X-Another-Custom-Header这两个头信息,都可以被浏览器得到.
